@@ -120,9 +120,9 @@ class SortImports(config: SortImportsConfig) extends SyntacticRule("SortImports"
     // Create patches using sorted - unsorted pairs
     // Essentially imports are playing musical chairs
     val patches: List[Patch] =
-      combined.flatMap(importTrades =>
-        importTrades.init.map(trade => Patch.replaceTree(trade.from, s"${trade.to}\n")) :+ Patch
-          .replaceTree(importTrades.last.from, importTrades.last.to)
+      combined.flatMap(importSwaps =>
+        importSwaps.init.map(trade => Patch.replaceTree(trade.from, s"${trade.to}\n")) :+ Patch
+          .replaceTree(importSwaps.last.from, importSwaps.last.to)
       )
 
     List(patches, removeLinesPatch, removeCommentsPatch, removeCommentSpacesPatch).flatten.asPatch
