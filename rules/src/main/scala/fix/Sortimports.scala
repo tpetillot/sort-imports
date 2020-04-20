@@ -3,7 +3,7 @@ package fix
 import scala.meta._
 import scala.meta.tokens.Token.{ Comment, LF }
 
-import fix.SortImportsConfig.Trade
+import fix.SortImportsConfig.Swap
 import metaconfig.generic.Surface
 import metaconfig.{ generic, ConfDecoder, ConfEncoder, Configured }
 import scalafix.v1._
@@ -24,7 +24,7 @@ object SortImportsConfig {
   implicit val decoder: ConfDecoder[SortImportsConfig] = generic.deriveDecoder[SortImportsConfig](default)
   implicit val encoder: ConfEncoder[SortImportsConfig] = generic.deriveEncoder[SortImportsConfig]
 
-  final class Trade(val value: (Import, String)) extends AnyVal {
+  final class Swap(val value: (Import, String)) extends AnyVal {
     def from: Import = value._1
     def to: String   = value._2
   }
@@ -42,7 +42,8 @@ class SortImports(config: SortImportsConfig) extends SyntacticRule("SortImports"
       .getOrElse("SortImports")(this.config)
       .map(new SortImports(_))
 
-  private val sortWith = if (config.asciiSort) new DefaultSort else new WildcardAndGroupFirstSort
+  private val importOrdering: ImportOrdering =
+    if (config.asciiSort) new DefaultSort else new WildcardAndGroupFirstSort
 
   override def fix(implicit doc: SyntacticDocument): Patch = {
 
@@ -80,7 +81,7 @@ class SortImports(config: SortImportsConfig) extends SyntacticRule("SortImports"
       // In case of import list, the first element in the list is significant
       val importsGrouped: Map[String, ImportGroup] =
         importGroup
-          .sortWith(sortWith.perform)
+          .sortWith(importOrdering.lt)
           .groupByBlock(configBlocksByLengthDesc, SortImportsConfig.Blocks.Asterisk)
 
       // If a start is not found in the SortImports rule, add it to the end
@@ -109,11 +110,11 @@ class SortImports(config: SortImportsConfig) extends SyntacticRule("SortImports"
       strImportsSorted.init :+ strImportsSorted.last.dropRight(1)
     }
 
-    val combined: List[List[Trade]] =
+    val combined: List[List[Swap]] =
       importGroups
         .zip(sorted)
         .map {
-          case (importGroup, strImportGroupSorted) => importGroup.value.zip(strImportGroupSorted).map(new Trade(_))
+          case (importGroup, strImportGroupSorted) => importGroup.value.zip(strImportGroupSorted).map(new Swap(_))
         }
 
     // Create patches using sorted - unsorted pairs
