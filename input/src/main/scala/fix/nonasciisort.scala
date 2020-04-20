@@ -13,7 +13,7 @@ import scala.Console._
 import scala._
 
 import java.util.regex.Matcher
-import java.util.{ HashMap, Base64 }
+import java.util.{ Base64, HashMap }
 
 object NonAsciiSort {
   // Add code that needs fixing here.

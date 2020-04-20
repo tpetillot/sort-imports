@@ -4,12 +4,12 @@ import scala.collection.mutable.ListBuffer
 import scala.meta.contrib.AssociatedComments
 import scala.meta.inputs.Position
 import scala.meta.tokens.Token
-import scala.meta.{Import, Traverser, Tree}
+import scala.meta.{ Import, Traverser, Tree }
 
 object ImportGroupTraverser {
   def retrieveImportGroups(tree: Tree): List[ImportGroup] = {
     val importGroupsBuffer = ListBuffer[ListBuffer[Import]](ListBuffer.empty)
-    val importTraverser = new ImportGroupTraverser(importGroupsBuffer)
+    val importTraverser    = new ImportGroupTraverser(importGroupsBuffer)
     importTraverser(tree)
     importGroupsBuffer.map(importGroupBuffer => ImportGroup(importGroupBuffer.toList)).toList
   }
@@ -33,18 +33,23 @@ case class ImportGroup(value: List[Import]) extends Traversable[Import] {
 
   def sortWith(f: (Import, Import) => Boolean): ImportGroup = ImportGroup(value.sortWith(f))
 
-  def groupByBlock(blocks: List[String], defaultBlock: String): Map[String, ImportGroup] = value.groupBy(imp => {
-    blocks.find(block => imp.children.head.syntax.startsWith(block))
-      .getOrElse(defaultBlock)
-  }).mapValues(ImportGroup(_))
+  def groupByBlock(blocks: List[String], defaultBlock: String): Map[String, ImportGroup] =
+    value.groupBy { imp =>
+      blocks
+        .find(block => imp.children.head.syntax.startsWith(block))
+        .getOrElse(defaultBlock)
+    }.mapValues(ImportGroup(_))
 
   def containPosition(pos: Position): Boolean =
-    pos.start > value.head.pos.start  && pos.end < value.last.pos.end
+    pos.start > value.head.pos.start && pos.end < value.last.pos.end
 
   def trailingComment(comments: AssociatedComments): Map[Import, Token.Comment] =
-    value.map(currentImport => currentImport -> comments.trailing(currentImport).headOption).collect {
-      case (imp, comment) if comment.nonEmpty => (imp, comment.get)
-    }.toMap
+    value
+      .map(currentImport => currentImport -> comments.trailing(currentImport).headOption)
+      .collect {
+        case (imp, comment) if comment.nonEmpty => (imp, comment.get)
+      }
+      .toMap
 
   override def nonEmpty: Boolean = value.nonEmpty
 

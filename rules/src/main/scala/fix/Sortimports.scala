@@ -1,11 +1,11 @@
 package fix
 
 import scala.meta._
-import scala.meta.tokens.Token.{Comment, LF}
+import scala.meta.tokens.Token.{ Comment, LF }
 
 import fix.SortImportsConfig.Trade
 import metaconfig.generic.Surface
-import metaconfig.{ConfDecoder, ConfEncoder, Configured, generic}
+import metaconfig.{ generic, ConfDecoder, ConfEncoder, Configured }
 import scalafix.v1._
 
 final case class SortImportsConfig(
@@ -19,14 +19,14 @@ object SortImportsConfig {
     val Asterisk: String = "*"
   }
 
-  val default: SortImportsConfig = SortImportsConfig()
-  implicit val surface: Surface[SortImportsConfig] = generic.deriveSurface[SortImportsConfig]
+  val default: SortImportsConfig                       = SortImportsConfig()
+  implicit val surface: Surface[SortImportsConfig]     = generic.deriveSurface[SortImportsConfig]
   implicit val decoder: ConfDecoder[SortImportsConfig] = generic.deriveDecoder[SortImportsConfig](default)
   implicit val encoder: ConfEncoder[SortImportsConfig] = generic.deriveEncoder[SortImportsConfig]
 
   final class Trade(val value: (Import, String)) extends AnyVal {
     def from: Import = value._1
-    def to: String = value._2
+    def to: String   = value._2
   }
 }
 
@@ -66,9 +66,10 @@ class SortImports(config: SortImportsConfig) extends SyntacticRule("SortImports"
     // Remove comments and whitespace between imports and comments
     val removeCommentsPatch: Iterable[Patch] = comments.values.map(Patch.removeToken)
     val removeCommentSpacesPatch: Iterable[Patch] = comments.flatMap {
-      case (imp, comment) => (0 to comment.pos.start - imp.pos.end).map { diff =>
-        new Token.Space(Input.None, comment.dialect, imp.pos.end + diff)
-      }
+      case (imp, comment) =>
+        (0 to comment.pos.start - imp.pos.end).map { diff =>
+          new Token.Space(Input.None, comment.dialect, imp.pos.end + diff)
+        }
     }.map(Patch.removeToken)
 
     // Sort each group of imports
@@ -89,7 +90,8 @@ class SortImports(config: SortImportsConfig) extends SyntacticRule("SortImports"
           .fold(config.blocks :+ SortImportsConfig.Blocks.Asterisk)(_ => config.blocks)
 
       // Sort grouped imports and convert to strings
-      val strImportsSorted = configBlocks.foldLeft(Seq[Seq[String]]()) { (acc, configBlock) =>
+      val strImportsSorted = configBlocks
+        .foldLeft(Seq[Seq[String]]()) { (acc, configBlock) =>
           importsGrouped.find {
             case (block, _) => block == configBlock
           }.fold(acc) {
@@ -100,7 +102,8 @@ class SortImports(config: SortImportsConfig) extends SyntacticRule("SortImports"
 
               acc :+ (strImports.init :+ (strImports.last + '\n'))
           }
-        }.flatten
+        }
+        .flatten
 
       // Remove extra newline on end of imports
       strImportsSorted.init :+ strImportsSorted.last.dropRight(1)
@@ -117,9 +120,8 @@ class SortImports(config: SortImportsConfig) extends SyntacticRule("SortImports"
     // Essentially imports are playing musical chairs
     val patches: List[Patch] =
       combined.flatMap(importTrades =>
-        importTrades.init.map(trade =>
-          Patch.replaceTree(trade.from, s"${trade.to}\n")
-        ) :+ Patch.replaceTree(importTrades.last.from, importTrades.last.to)
+        importTrades.init.map(trade => Patch.replaceTree(trade.from, s"${trade.to}\n")) :+ Patch
+          .replaceTree(importTrades.last.from, importTrades.last.to)
       )
 
     List(patches, removeLinesPatch, removeCommentsPatch, removeCommentSpacesPatch).flatten.asPatch

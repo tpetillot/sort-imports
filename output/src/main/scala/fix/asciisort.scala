@@ -1,7 +1,7 @@
 package fix
 
 import java.util.regex.Matcher
-import java.util.{ HashMap, Base64 }
+import java.util.{ Base64, HashMap }
 
 import scala.Console._
 import scala._

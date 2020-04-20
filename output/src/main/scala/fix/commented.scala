@@ -2,7 +2,7 @@ import java.math.BigInteger
 import java.util.Map
 
 import scala.collection._ // foo2
-import scala.util._ // foo1
+import scala.util._       // foo1
 
 import com.oracle.net._
 

@@ -5,13 +5,13 @@ rule = SortImports
  "scala",
  "*"
  ]
-*/
+ */
 package fix
 
 import scala._
 import scala.Console._
 
-import java.util.{ HashMap, Base64 }
+import java.util.{ Base64, HashMap }
 import java.util.regex.Matcher
 
 object AsciiSort {
