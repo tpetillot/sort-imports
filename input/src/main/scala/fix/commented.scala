@@ -7,7 +7,7 @@ rule = SortImports
  "com.sun"
  ]
  */
-import scala.util._       // foo1
+import scala.util._ // foo1
 import scala.collection._ // foo2
 import java.util.Map
 import com.oracle.net._
