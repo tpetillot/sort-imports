@@ -26,7 +26,7 @@ private class ImportGroupTraverser(listBuffer: ListBuffer[ListBuffer[Import]]) e
 
 object ImportGroup {
 
-  val empty: ImportGroup = ImportGroup(List.empty)
+  val empty: ImportGroup = ImportGroup(Nil)
 }
 
 case class ImportGroup(value: List[Import]) extends Traversable[Import] {
