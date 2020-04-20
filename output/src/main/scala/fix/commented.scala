@@ -1,12 +1,12 @@
 import java.math.BigInteger
 import java.util.Map
 
-import scala.collection._ // foo2
-import scala.util._ // foo1
+import scala.collection._
+import scala.util._ // foobar
 
 import com.oracle.net._
 
-import com.sun.awt._ // foo3
+import com.sun.awt._
 
 /**
  *  Bla
